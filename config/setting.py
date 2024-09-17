@@ -5,6 +5,10 @@ OneForAll自定义配置
 import configparser
 import pathlib
 import os
+import platform
+import socket
+import requests
+
 def read_ini_config(section_name, key_name, file_name=os.path.dirname(os.path.abspath(__file__)) + "/../config/default.ini"):
     # 先从环境变量获取
     value = os.getenv(f"{section_name}_{key_name}")
@@ -18,6 +22,27 @@ def read_ini_config(section_name, key_name, file_name=os.path.dirname(os.path.ab
         return value
     except:
         return None
+def get_hostname():
+    try:
+        hostname = socket.gethostname()
+        return hostname
+    except socket.error as err:
+        print(f"Unable to get hostname: {err}")
+        return None
+def get_external_ip():
+    while True:
+        try:
+            response = requests.get('https://httpbin.org/ip')
+            response.raise_for_status()  # 检查请求是否成功
+            ip = response.json()['origin']
+            return ip
+        except requests.RequestException as e:
+            print(f"An error occurred: {e}")
+
+HOSTNAME = get_hostname()
+EXTERNAL_IP = get_external_ip()
+# 当前系统Windows or Linux
+PLATFORM = platform.system()
 
 # rabbitmq设置
 rabbitmq_host = read_ini_config("rabbitmq", "host")
