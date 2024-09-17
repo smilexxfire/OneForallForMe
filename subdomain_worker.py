@@ -18,6 +18,7 @@ from modules.heartbeat import Heartbeat
 from oneforall import OneForAll
 from config import settings
 from config.log import logger
+from common.task import Task
 
 def oneforall(domain):
     test = OneForAll(target=domain)
@@ -30,10 +31,12 @@ def oneforall(domain):
     results = test.datas
     return results
 
-class Subdomain():
+class Subdomain(Task):
     def __init__(self, task):
         self.task = task
         self.results = list()
+
+        Task.__init__(self, task_id=task["task_id"])
 
     def do_scan(self):
         rs = oneforall(self.task["domain"])
@@ -73,8 +76,10 @@ class Subdomain():
                     logger.log("INFOR", "尝试重新save_db....")
 
     def run(self):
+        self.receive_task()
         self.do_scan()
         self.save_db()
+        self.finnish_task(time_escape="xxx", lens=len(self.results))
 
 
 def run(task):
